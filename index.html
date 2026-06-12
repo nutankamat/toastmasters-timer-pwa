@@ -137,9 +137,11 @@ textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Conso
   <details>
     <summary><span class="summary-left"><span class="summary-icon">🧹</span>Reset Options</span><span class="chev">⌄</span></summary>
     <div class="details-body">
+      <button onclick="clearTimingsOnly()" class="btn-secondary">Clear Timings Only</button>
       <button onclick="clearAll()" class="btn-danger">Clear Meeting Data</button>
       <button onclick="clearEverything()" class="btn-ghost">Clear Everything Including Presets</button>
-      <p class="small">Clear Meeting keeps custom presets and meeting details. Clear Everything removes all saved app data.</p>
+      <p class="small"><b>Clear Timings Only</b> removes saved times but keeps speaker names, speech titles, meeting details and presets. Use this if you want to restart timing with the same agenda.</p>
+      <p class="small"><b>Clear Meeting Data</b> removes speakers and timings but keeps custom presets and meeting details. <b>Clear Everything</b> removes all saved app data.</p>
     </div>
   </details>
 </div>
@@ -298,6 +300,21 @@ function copyReport(){if(!document.getElementById("report").value.trim()){review
 let text=document.getElementById("report").value||generateReport();navigator.clipboard.writeText(text).then(()=>toast("Report copied!")).catch(()=>toast("Copy failed. Please manually select and copy the report."));}
 function shareReport(){if(!document.getElementById("report").value.trim()){reviewAndGenerateReport();}
 let text=encodeURIComponent(document.getElementById("report").value||generateReport());window.open("https://wa.me/?text="+text,"_blank");}
+function clearTimingsOnly(){
+if(confirm("Clear all saved timings but keep the speaker list, speech titles, meeting details and presets?")){
+records=[];
+seconds=0;
+currentIndex=0;
+localStorage.removeItem("records");
+save();
+renderSpeakers();
+renderResults();
+updateTimer();
+document.getElementById("report").value="";
+invalidateReport();
+toast("Timings cleared. Speaker list retained.");
+}
+}
 function clearAll(){if(confirm("Clear this meeting data? Custom presets and meeting details will remain saved.")){speakers=[];records=[];seconds=0;currentIndex=0;localStorage.removeItem("speakers");localStorage.removeItem("records");save();renderSpeakers();renderResults();updateTimer();document.getElementById("report").value="";}}
 function clearEverything(){if(confirm("Clear everything including custom presets and meeting details?")){speakers=[];records=[];customPresets=[];meetingDetails={};seconds=0;currentIndex=0;localStorage.clear();loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();updateTimer();document.getElementById("report").value="";}}
 
