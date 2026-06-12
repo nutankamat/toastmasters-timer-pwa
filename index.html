@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Toastmasters Timer</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0f172a;--card:#172033;--card2:#1f2937;--text:#f8fafc;--muted:#cbd5e1;--soft:#334155;--accent:#38bdf8;--accent2:#7dd3fc;--danger:#ef4444;--ok:#16a34a;--warn:#eab308;--shadow:0 12px 30px rgba(0,0,0,.28)}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .25s,color .25s;min-height:100vh}
+.app{max-width:560px;margin:auto;padding:14px 14px 36px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 12px}
+h1{font-size:26px;line-height:1;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:6px}.chip{background:rgba(56,189,248,.14);color:#e0f2fe;border:1px solid rgba(125,211,252,.25);padding:7px 10px;border-radius:999px;font-size:12px;white-space:nowrap}
+.card{background:rgba(23,32,51,.98);border:1px solid rgba(148,163,184,.12);border-radius:22px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.primary-card{background:linear-gradient(180deg,rgba(30,41,59,.98),rgba(15,23,42,.98));border:1px solid rgba(56,189,248,.18)}
+h2,h3{margin:4px 0 10px}h3{font-size:17px}.small{font-size:13px;color:var(--muted);line-height:1.38}.tiny{font-size:12px;color:var(--muted)}
+input,select,button,textarea{width:100%;padding:13px;margin:6px 0;border-radius:14px;border:0;font-size:16px;font-family:inherit}
+input,select,textarea{background:#fff;color:#111;border:1px solid rgba(255,255,255,.08)}
+button{font-weight:800;background:var(--accent);color:#001018;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.18)}button:active{transform:translateY(1px)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.btn-secondary{background:#94a3b8!important;color:#0f172a!important}.btn-danger{background:var(--danger)!important;color:white!important}.btn-ghost{background:#334155!important;color:white!important}.btn-ok{background:#22c55e!important;color:#052e16!important}.mini{padding:7px 9px;margin:2px;font-size:12px;border-radius:10px}.mini-row{display:flex;gap:6px;flex-wrap:wrap}
+.timer{font-size:82px;text-align:center;font-weight:950;margin:12px 0;letter-spacing:1px;font-variant-numeric:tabular-nums}.stage{font-size:22px;text-align:center;font-weight:850;white-space:pre-line;line-height:1.35;margin:10px 0 6px}.timing-strip{text-align:center;background:rgba(148,163,184,.12);border-radius:14px;padding:9px;margin:10px 0;color:#dbeafe;font-size:13px}.progress{height:9px;background:rgba(255,255,255,.14);border-radius:999px;overflow:hidden;margin:10px 0 4px}.bar{height:100%;width:0;background:#38bdf8;border-radius:999px;transition:width .25s,background .25s}
+.green{background:#15803d!important;color:white!important}.yellow{background:#facc15!important;color:#111!important}.red{background:#dc2626!important;color:white!important}.dark{background:#0f172a!important;color:white!important}
+details{background:rgba(31,41,55,.94);border:1px solid rgba(148,163,184,.13);border-radius:18px;margin:12px 0;box-shadow:0 6px 18px rgba(0,0,0,.18);overflow:hidden}summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:850;display:flex;align-items:center;justify-content:space-between;gap:8px}summary::-webkit-details-marker{display:none}.summary-left{display:flex;align-items:center;gap:10px}.summary-icon{font-size:20px}.chev{transition:transform .2s;color:#93c5fd}details[open] .chev{transform:rotate(180deg)}.details-body{padding:0 16px 16px;border-top:1px solid rgba(148,163,184,.13)}
+.quick-actions{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(15,23,42,.86));backdrop-filter:blur(10px);padding:8px 0 6px;margin:-4px 0 4px}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick-grid button{margin:0;padding:11px 9px;font-size:14px;border-radius:12px}
+table{width:100%;border-collapse:separate;border-spacing:0;background:white;color:#111;border-radius:14px;overflow:hidden}th,td{border-bottom:1px solid #e5e7eb;padding:8px;font-size:12px;text-align:left;vertical-align:top}th{background:#f1f5f9;font-size:11px;text-transform:uppercase;letter-spacing:.02em}tr:last-child td{border-bottom:0}.table-wrap{overflow:auto;border-radius:14px}.badge{display:inline-block;padding:4px 8px;border-radius:20px;font-weight:850;white-space:nowrap;font-size:11px}.ok{background:#bbf7d0}.bad{background:#fecaca}.warn{background:#fef08a}.inline-input{padding:7px;margin:2px;font-size:13px;border:1px solid #ddd;border-radius:8px}.pill{display:inline-block;background:#334155;color:#fff;border-radius:999px;padding:5px 9px;font-size:12px;margin:3px 3px 0 0}.preset-list{margin-top:8px}.empty{padding:12px;background:rgba(148,163,184,.12);border-radius:14px;color:#cbd5e1;text-align:center;font-size:13px}
+textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:14px;line-height:1.35}.config-note{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18);padding:10px;border-radius:14px;color:#dff6ff;font-size:13px;margin-top:8px}.section-count{font-size:12px;background:#0f172a;color:#cbd5e1;border:1px solid rgba(148,163,184,.18);border-radius:999px;padding:4px 8px}
+@media (max-width:430px){.timer{font-size:72px}.app{padding:12px}input,select,button,textarea{font-size:15px}.row,.row3{gap:6px}.card{padding:14px;border-radius:20px}th,td{font-size:11px;padding:7px}.hide-mobile{display:none}}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TM Timer">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body class="dark">
+<div class="app">
+  <div class="header">
+    <div><h1>⏱️ Toastmasters Timer</h1><div class="sub"></div></div>
+    <div class="chip">Offline PWA</div>
+  </div>
+
+  <div class="quick-actions">
+    <div class="quick-grid">
+      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">+ TT1–TT3</button>
+      <button onclick="generateReport()">Report</button>
+    </div>
+  </div>
+
+  <div class="card primary-card">
+    <h3>Current Speaker</h3>
+    <select id="speakerList" onchange="selectSpeaker()"></select>
+    <div class="stage" id="current">No speaker selected</div>
+    <div class="timer" id="timer">00:00</div>
+    <div class="progress"><div class="bar" id="progressBar"></div></div>
+    <div id="timingInfo" class="timing-strip"></div>
+    <div class="row">
+      <button onclick="startTimer()" class="btn-ok">Start</button>
+      <button onclick="pauseTimer()" class="btn-secondary">Pause</button>
+      <button onclick="resetTimer()" class="btn-ghost">Reset</button>
+      <button onclick="saveTiming()">Save Timing</button>
+    </div>
+    <button onclick="nextSpeaker()" class="btn-secondary">Next Speaker</button>
+  </div>
+
+  <details open>
+    <summary><span class="summary-left"><span class="summary-icon">➕</span>Add Speaker</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <input id="name" placeholder="Speaker name">
+      <input id="speechTitle" placeholder="Speech title (optional, useful for Prepared Speeches)">
+      <select id="type"></select>
+      <button onclick="addSpeaker()">Add Speaker</button>
+      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">Add TT1, TT2, TT3 Placeholders</button>
+      <p class="small">For Table Topics, add placeholders first and edit names later in Results.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="summary-left"><span class="summary-icon">📝</span>Meeting Details</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <input id="clubName" placeholder="Club name e.g. Calangute Toastmasters Club">
+      <input id="meetingNumber" placeholder="Meeting number e.g. 245">
+      <input id="theme" placeholder="Meeting theme e.g. Decoding Gibberish">
+      <input id="timerName" placeholder="Timer name e.g. Nutan">
+      <button onclick="saveMeetingDetails()">Save Meeting Details</button>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="summary-left"><span class="summary-icon">⚙️</span>Custom Timing Presets</span><span class="section-count" id="presetCount">0 custom</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <input id="presetName" placeholder="Preset name e.g. Ice Breaker">
+      <div class="row">
+        <input id="greenMin" type="number" inputmode="numeric" placeholder="Green min">
+        <input id="greenSec" type="number" inputmode="numeric" placeholder="Green sec">
+        <input id="yellowMin" type="number" inputmode="numeric" placeholder="Yellow min">
+        <input id="yellowSec" type="number" inputmode="numeric" placeholder="Yellow sec">
+        <input id="redMin" type="number" inputmode="numeric" placeholder="Red min">
+        <input id="redSec" type="number" inputmode="numeric" placeholder="Red sec">
+      </div>
+      <button onclick="addCustomPreset()">Add Custom Preset</button>
+      <button onclick="resetPresets()" class="btn-secondary">Reset Custom Presets</button>
+      <div class="config-note">Green = minimum qualifying time, Yellow = warning, Red = max ideal time. Over-time is marked after a 30-second grace period.</div>
+      <div id="presetList" class="preset-list"></div>
+    </div>
+  </details>
+
+  <details open>
+    <summary><span class="summary-left"><span class="summary-icon">✅</span>Results</span><span class="section-count" id="resultCount">0 saved</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <p class="small">Tap Edit to correct TT names or speech titles before sharing the report.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Speech</th><th class="hide-mobile">Type</th><th>Time</th><th>Status</th><th>Edit</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary><span class="summary-left"><span class="summary-icon">📤</span>WhatsApp Report</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <div class="row">
+        <button onclick="generateReport()">Generate</button>
+        <button onclick="copyReport()" class="btn-secondary">Copy</button>
+      </div>
+      <button onclick="shareReport()" class="btn-ok">Share on WhatsApp</button>
+      <textarea id="report" placeholder="Your WhatsApp-friendly report will appear here..."></textarea>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="summary-left"><span class="summary-icon">🧹</span>Reset Options</span><span class="chev">⌄</span></summary>
+    <div class="details-body">
+      <button onclick="clearAll()" class="btn-danger">Clear Meeting Data</button>
+      <button onclick="clearEverything()" class="btn-ghost">Clear Everything Including Presets</button>
+      <p class="small">Clear Meeting keeps custom presets and meeting details. Clear Everything removes all saved app data.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+let seconds=0;
+let timer=null;
+let currentIndex=0;
+let speakers=JSON.parse(localStorage.getItem("speakers")||"[]");
+let records=JSON.parse(localStorage.getItem("records")||"[]");
+let meetingDetails=JSON.parse(localStorage.getItem("meetingDetails")||"{}");
+let customPresets=JSON.parse(localStorage.getItem("customPresets")||"[]");
+
+let defaultPresets=[
+{key:"prepared",label:"Prepared Speech",green:300,yellow:360,red:420,min:300,max:450},
+{key:"table",label:"Table Topics",green:60,yellow:90,red:120,min:60,max:150},
+{key:"evaluation",label:"Evaluation",green:120,yellow:150,red:180,min:120,max:210}
+];
+
+function getAllPresets(){return [...defaultPresets,...customPresets];}
+function getPreset(key){return getAllPresets().find(p=>p.key===key);}
+function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+function save(){localStorage.setItem("speakers",JSON.stringify(speakers));localStorage.setItem("records",JSON.stringify(records));localStorage.setItem("customPresets",JSON.stringify(customPresets));}
+function escapeHtml(str){return String(str).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function escapeAttr(str){return escapeHtml(str).replace(/`/g,'&#96;');}
+function toast(msg){alert(msg);}
+
+function saveMeetingDetails(){
+meetingDetails={clubName:document.getElementById("clubName").value.trim(),meetingNumber:document.getElementById("meetingNumber").value.trim(),theme:document.getElementById("theme").value.trim(),timerName:document.getElementById("timerName").value.trim()};
+localStorage.setItem("meetingDetails",JSON.stringify(meetingDetails));
+generateReport();toast("Meeting details saved!");
+}
+function loadMeetingDetails(){document.getElementById("clubName").value=meetingDetails.clubName||"";document.getElementById("meetingNumber").value=meetingDetails.meetingNumber||"";document.getElementById("theme").value=meetingDetails.theme||"";document.getElementById("timerName").value=meetingDetails.timerName||"";}
+function toSeconds(minId,secId){let m=Number(document.getElementById(minId).value||0);let s=Number(document.getElementById(secId).value||0);return m*60+s;}
+
+function renderTypeDropdown(){
+let type=document.getElementById("type");type.innerHTML="";
+getAllPresets().forEach(p=>{let option=document.createElement("option");option.value=p.key;option.textContent=`${p.label} — ${fmt(p.green)} / ${fmt(p.yellow)} / ${fmt(p.red)}`;type.appendChild(option);});
+renderPresetList();
+}
+function renderPresetList(){
+let el=document.getElementById("presetList");let count=document.getElementById("presetCount");
+count.textContent=`${customPresets.length} custom`;
+if(customPresets.length===0){el.innerHTML='<div class="empty">No custom presets yet.</div>';return;}
+el.innerHTML=customPresets.map(p=>`<span class="pill">${escapeHtml(p.label)}: ${fmt(p.green)} / ${fmt(p.yellow)} / ${fmt(p.red)}</span>`).join("");
+}
+function addCustomPreset(){
+let name=document.getElementById("presetName").value.trim();let green=toSeconds("greenMin","greenSec");let yellow=toSeconds("yellowMin","yellowSec");let red=toSeconds("redMin","redSec");
+if(!name){toast("Enter preset name");return;}
+if(!(green>0 && yellow>green && red>yellow)){toast("Please enter valid timings: green < yellow < red");return;}
+customPresets.push({key:"custom_"+Date.now(),label:name,green,yellow,red,min:green,max:red+30});save();renderTypeDropdown();
+document.getElementById("presetName").value="";["greenMin","greenSec","yellowMin","yellowSec","redMin","redSec"].forEach(id=>document.getElementById(id).value="");
+toast("Custom preset added!");
+}
+function resetPresets(){if(confirm("Delete all custom timing presets?")){customPresets=[];save();renderTypeDropdown();toast("Custom presets cleared.");}}
+
+function addSpeaker(){
+let name=document.getElementById("name").value.trim();let speechTitle=document.getElementById("speechTitle").value.trim();let type=document.getElementById("type").value;
+if(!name){toast("Enter speaker name");return;}
+speakers.push({name,type,speechTitle});document.getElementById("name").value="";document.getElementById("speechTitle").value="";save();renderSpeakers();
+}
+function addTableTopicsPlaceholders(){
+let ttPreset=getAllPresets().find(p=>p.label==="Table Topics") || defaultPresets.find(p=>p.key==="table");
+let allNames=[...speakers.map(s=>s.name),...records.map(r=>r.name)];
+let maxTT=0;allNames.forEach(n=>{let m=String(n).match(/^TT(\d+)$/i);if(m)maxTT=Math.max(maxTT,Number(m[1]));});
+for(let i=1;i<=3;i++){speakers.push({name:"TT"+(maxTT+i),type:ttPreset.key,speechTitle:""});}
+save();renderSpeakers();toast("Added TT placeholders. Edit final names from Results after timing.");
+}
+function renderSpeakers(){
+let list=document.getElementById("speakerList");list.innerHTML="";
+if(speakers.length===0){let o=document.createElement("option");o.textContent="No speakers added";list.appendChild(o);document.getElementById("current").textContent="No speaker selected";document.getElementById("timingInfo").textContent="Add a speaker or TT placeholders to begin.";renderResults();return;}
+if(currentIndex>=speakers.length) currentIndex=speakers.length-1;
+speakers.forEach((s,i)=>{let p=getPreset(s.type);let o=document.createElement("option");o.value=i;o.textContent=s.speechTitle?`${s.name} — “${s.speechTitle}”`:`${s.name} - ${p?p.label:"Unknown Timing"}`;list.appendChild(o);});
+list.value=currentIndex;selectSpeaker(false);renderResults();
+}
+function selectSpeaker(shouldReset=true){
+currentIndex=Number(document.getElementById("speakerList").value||0);let s=speakers[currentIndex];let p=s?getPreset(s.type):null;
+document.getElementById("current").textContent=s&&p?(s.speechTitle?`${s.name}\n“${s.speechTitle}”\n${p.label}`:`${s.name}\n${p.label}`):"No speaker selected";
+document.getElementById("timingInfo").textContent=p?`Green ${fmt(p.green)} • Yellow ${fmt(p.yellow)} • Red ${fmt(p.red)} • Qualified ${fmt(p.min)} to ${fmt(p.max)}`:"";
+if(shouldReset) resetTimer(); else updateTimer();
+}
+function startTimer(){if(timer||!speakers.length)return;timer=setInterval(()=>{seconds++;updateTimer();},1000);}
+function pauseTimer(){clearInterval(timer);timer=null;}
+function resetTimer(){pauseTimer();seconds=0;updateTimer();}
+function updateTimer(){
+document.getElementById("timer").textContent=fmt(seconds);document.body.className="";
+let s=speakers[currentIndex];let p=s?getPreset(s.type):null;let bar=document.getElementById("progressBar");
+if(!s||!p){document.body.className="dark";bar.style.width="0%";bar.style.background="#38bdf8";return;}
+let pct=Math.min(100,(seconds/Math.max(p.max,1))*100);bar.style.width=pct+"%";
+if(seconds>=p.red){document.body.className="red";bar.style.background="#fff";}
+else if(seconds>=p.yellow){document.body.className="yellow";bar.style.background="#111";}
+else if(seconds>=p.green){document.body.className="green";bar.style.background="#fff";}
+else{document.body.className="dark";bar.style.background="#38bdf8";}
+}
+function saveTiming(){
+let s=speakers[currentIndex];if(!s){toast("Add/select speaker first");return;}let p=getPreset(s.type);if(!p){toast("Timing preset missing");return;}
+let status="Qualified";if(seconds<p.min)status="Under Time";else if(seconds>p.max)status="Over Time";
+records.push({name:s.name,speechTitle:s.speechTitle||"",type:p.label,time:fmt(seconds),status});
+speakers.splice(currentIndex,1);if(currentIndex>=speakers.length)currentIndex=Math.max(0,speakers.length-1);
+save();renderSpeakers();renderResults();generateReport();resetTimer();
+}
+function nextSpeaker(){if(currentIndex<speakers.length-1){currentIndex++;document.getElementById("speakerList").value=currentIndex;selectSpeaker();}else{resetTimer();}}
+
+function renderResults(){
+let body=document.getElementById("results");let count=document.getElementById("resultCount");count.textContent=`${records.length} saved`;body.innerHTML="";
+if(records.length===0){body.innerHTML='<tr><td colspan="6" class="empty">No timings saved yet.</td></tr>';return;}
+records.forEach((r,i)=>{body.innerHTML+=`<tr id="recordRow${i}"><td>${escapeHtml(r.name)}</td><td>${r.speechTitle?escapeHtml(r.speechTitle):"—"}</td><td class="hide-mobile">${escapeHtml(r.type)}</td><td>${r.time}</td><td><span class="badge ${r.status==='Qualified'?'ok':r.status==='Under Time'?'warn':'bad'}">${r.status}</span></td><td><button class="mini btn-secondary" onclick="editRecord(${i})">Edit</button></td></tr>`;});
+}
+function editRecord(index){
+let r=records[index];let row=document.getElementById("recordRow"+index);if(!row||!r)return;
+row.innerHTML=`<td><input class="inline-input" id="editName${index}" value="${escapeAttr(r.name)}"></td><td><input class="inline-input" id="editTitle${index}" value="${escapeAttr(r.speechTitle||"")}" placeholder="Optional"></td><td class="hide-mobile">${escapeHtml(r.type)}</td><td>${r.time}</td><td><span class="badge ${r.status==='Qualified'?'ok':r.status==='Under Time'?'warn':'bad'}">${r.status}</span></td><td><button class="mini" onclick="saveRecordEdit(${index})">Save</button><button class="mini btn-ghost" onclick="renderResults()">Cancel</button></td>`;
+}
+function saveRecordEdit(index){
+let name=document.getElementById("editName"+index).value.trim();let speechTitle=document.getElementById("editTitle"+index).value.trim();if(!name){toast("Speaker name cannot be blank");return;}
+records[index].name=name;records[index].speechTitle=speechTitle;save();renderResults();generateReport();
+}
+
+function generateReport(){
+let report="⏱️ *TIMER'S REPORT* ⏱️\n\n";
+if(meetingDetails.clubName)report+=`*Club:* ${meetingDetails.clubName}\n`;
+if(meetingDetails.meetingNumber)report+=`*Meeting No:* ${meetingDetails.meetingNumber}\n`;
+if(meetingDetails.theme)report+=`*Theme:* ${meetingDetails.theme}\n`;
+if(meetingDetails.timerName)report+=`*Timer:* ${meetingDetails.timerName}\n`;
+report+="\n";
+if(records.length===0){report+="No timings recorded yet.\n";document.getElementById("report").value=report;return report;}
+let types=[...new Set(records.map(r=>r.type))];
+types.forEach(type=>{let data=records.filter(r=>r.type===type);report+="*"+type+"*\n";report+="────────────────\n";data.forEach(r=>{let emoji=r.status==="Qualified"?"✅":r.status==="Under Time"?"⚠️":"❌";report+=`${emoji} *${r.name}*\n`;if(r.speechTitle){report+=`   Speech: _${r.speechTitle}_\n`;}report+=`   Time: ${r.time}\n`;report+=`   Status: ${r.status}\n\n`;});});
+let qualified=records.filter(r=>r.status==="Qualified").length;let under=records.filter(r=>r.status==="Under Time").length;let over=records.filter(r=>r.status==="Over Time").length;
+report+="*Summary*\n";report+="────────────────\n";report+=`✅ Qualified: ${qualified}\n`;report+=`⚠️ Under Time: ${under}\n`;report+=`❌ Over Time: ${over}\n`;
+document.getElementById("report").value=report;return report;
+}
+function copyReport(){let text=generateReport();navigator.clipboard.writeText(text).then(()=>toast("Report copied!")).catch(()=>toast("Copy failed. Please manually select and copy the report."));}
+function shareReport(){let text=encodeURIComponent(generateReport());window.open("https://wa.me/?text="+text,"_blank");}
+function clearAll(){if(confirm("Clear this meeting data? Custom presets and meeting details will remain saved.")){speakers=[];records=[];seconds=0;currentIndex=0;localStorage.removeItem("speakers");localStorage.removeItem("records");save();renderSpeakers();renderResults();updateTimer();generateReport();}}
+function clearEverything(){if(confirm("Clear everything including custom presets and meeting details?")){speakers=[];records=[];customPresets=[];meetingDetails={};seconds=0;currentIndex=0;localStorage.clear();loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();updateTimer();generateReport();}}
+
+loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();generateReport();updateTimer();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("./service-worker.js").catch(function(error) { console.log("Service worker registration failed:", error); });
+  });
+}
+</script>
+</body>
+</html>
