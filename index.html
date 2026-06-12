@@ -36,18 +36,21 @@ textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Conso
 <body class="dark">
 <div class="app">
   <div class="header">
-    <div><h1>⏱️ Toastmasters Timer</h1><div class="sub"></div></div>
+    <div><h1>⏱️ TM Timer</h1><div class="sub">Set up → Time speakers → Review → Share</div></div>
     <div class="chip">Offline PWA</div>
   </div>
 
   <div class="quick-actions">
     <div class="quick-grid">
-      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">+ TT1–TT3</button>
-      <button onclick="generateReport()">Report</button>
+      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">+ Add TT1–TT4</button>
+      <button onclick="openResults()">Review Results</button>
     </div>
   </div>
 
   <div class="card primary-card">
+    <div class="config-note" id="workflowHint">
+      <b>How to use:</b> Add speakers or TT placeholders, select the current speaker, tap Start, then Save Timing. Review names at the end before sharing.
+    </div>
     <h3>Current Speaker</h3>
     <select id="speakerList" onchange="selectSpeaker()"></select>
     <div class="stage" id="current">No speaker selected</div>
@@ -70,8 +73,8 @@ textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Conso
       <input id="speechTitle" placeholder="Speech title (optional, useful for Prepared Speeches)">
       <select id="type"></select>
       <button onclick="addSpeaker()">Add Speaker</button>
-      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">Add TT1, TT2, TT3 Placeholders</button>
-      <p class="small">For Table Topics, add placeholders first and edit names later in Results.</p>
+      <button onclick="addTableTopicsPlaceholders()" class="btn-secondary">Add 4 Table Topic Speakers</button>
+      <p class="small">TT = Table Topic Speaker. Creates TT1, TT2, TT3 and TT4 placeholders that can be renamed later before the final report.</p>
     </div>
   </details>
 
@@ -105,10 +108,10 @@ textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Conso
     </div>
   </details>
 
-  <details open>
-    <summary><span class="summary-left"><span class="summary-icon">✅</span>Results</span><span class="section-count" id="resultCount">0 saved</span><span class="chev">⌄</span></summary>
+  <details open id="resultsSection">
+    <summary><span class="summary-left"><span class="summary-icon">✅</span>Saved Results</span><span class="section-count" id="resultCount">0 saved</span><span class="chev">⌄</span></summary>
     <div class="details-body">
-      <p class="small">Tap Edit to correct TT names or speech titles before sharing the report.</p>
+      <p class="small">Tap Edit to correct TT placeholder names or speech titles before sharing the report.</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Name</th><th>Speech</th><th class="hide-mobile">Type</th><th>Time</th><th>Status</th><th>Edit</th></tr></thead>
@@ -118,15 +121,16 @@ textarea{height:285px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Conso
     </div>
   </details>
 
-  <details open>
-    <summary><span class="summary-left"><span class="summary-icon">📤</span>WhatsApp Report</span><span class="chev">⌄</span></summary>
+  <details id="reportSection">
+    <summary><span class="summary-left"><span class="summary-icon">📤</span>Final Timer Report</span><span class="chev">⌄</span></summary>
     <div class="details-body">
+      <p class="small">Use this at the end of the meeting. First review TT placeholder names in Saved Results, then build and share the report.</p>
+      <button onclick="reviewAndGenerateReport()">📋 Review & Build Timer Report</button>
       <div class="row">
-        <button onclick="generateReport()">Generate</button>
-        <button onclick="copyReport()" class="btn-secondary">Copy</button>
+        <button onclick="copyReport()" class="btn-secondary">Copy Report</button>
+        <button onclick="shareReport()" class="btn-ok">Share WhatsApp</button>
       </div>
-      <button onclick="shareReport()" class="btn-ok">Share on WhatsApp</button>
-      <textarea id="report" placeholder="Your WhatsApp-friendly report will appear here..."></textarea>
+      <textarea id="report" placeholder="Your WhatsApp-friendly report will appear here after you build it..."></textarea>
     </div>
   </details>
 
@@ -162,11 +166,12 @@ function save(){localStorage.setItem("speakers",JSON.stringify(speakers));localS
 function escapeHtml(str){return String(str).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function escapeAttr(str){return escapeHtml(str).replace(/`/g,'&#96;');}
 function toast(msg){alert(msg);}
+function invalidateReport(){let el=document.getElementById("report");if(el)el.value="";}
 
 function saveMeetingDetails(){
 meetingDetails={clubName:document.getElementById("clubName").value.trim(),meetingNumber:document.getElementById("meetingNumber").value.trim(),theme:document.getElementById("theme").value.trim(),timerName:document.getElementById("timerName").value.trim()};
 localStorage.setItem("meetingDetails",JSON.stringify(meetingDetails));
-generateReport();toast("Meeting details saved!");
+invalidateReport();toast("Meeting details saved!");
 }
 function loadMeetingDetails(){document.getElementById("clubName").value=meetingDetails.clubName||"";document.getElementById("meetingNumber").value=meetingDetails.meetingNumber||"";document.getElementById("theme").value=meetingDetails.theme||"";document.getElementById("timerName").value=meetingDetails.timerName||"";}
 function toSeconds(minId,secId){let m=Number(document.getElementById(minId).value||0);let s=Number(document.getElementById(secId).value||0);return m*60+s;}
@@ -186,23 +191,23 @@ function addCustomPreset(){
 let name=document.getElementById("presetName").value.trim();let green=toSeconds("greenMin","greenSec");let yellow=toSeconds("yellowMin","yellowSec");let red=toSeconds("redMin","redSec");
 if(!name){toast("Enter preset name");return;}
 if(!(green>0 && yellow>green && red>yellow)){toast("Please enter valid timings: green < yellow < red");return;}
-customPresets.push({key:"custom_"+Date.now(),label:name,green,yellow,red,min:green,max:red+30});save();renderTypeDropdown();
+customPresets.push({key:"custom_"+Date.now(),label:name,green,yellow,red,min:green,max:red+30});save();renderTypeDropdown();invalidateReport();
 document.getElementById("presetName").value="";["greenMin","greenSec","yellowMin","yellowSec","redMin","redSec"].forEach(id=>document.getElementById(id).value="");
 toast("Custom preset added!");
 }
-function resetPresets(){if(confirm("Delete all custom timing presets?")){customPresets=[];save();renderTypeDropdown();toast("Custom presets cleared.");}}
+function resetPresets(){if(confirm("Delete all custom timing presets?")){customPresets=[];save();renderTypeDropdown();invalidateReport();toast("Custom presets cleared.");}}
 
 function addSpeaker(){
 let name=document.getElementById("name").value.trim();let speechTitle=document.getElementById("speechTitle").value.trim();let type=document.getElementById("type").value;
 if(!name){toast("Enter speaker name");return;}
-speakers.push({name,type,speechTitle});document.getElementById("name").value="";document.getElementById("speechTitle").value="";save();renderSpeakers();
+speakers.push({name,type,speechTitle});document.getElementById("name").value="";document.getElementById("speechTitle").value="";save();renderSpeakers();invalidateReport();
 }
 function addTableTopicsPlaceholders(){
 let ttPreset=getAllPresets().find(p=>p.label==="Table Topics") || defaultPresets.find(p=>p.key==="table");
 let allNames=[...speakers.map(s=>s.name),...records.map(r=>r.name)];
 let maxTT=0;allNames.forEach(n=>{let m=String(n).match(/^TT(\d+)$/i);if(m)maxTT=Math.max(maxTT,Number(m[1]));});
-for(let i=1;i<=3;i++){speakers.push({name:"TT"+(maxTT+i),type:ttPreset.key,speechTitle:""});}
-save();renderSpeakers();toast("Added TT placeholders. Edit final names from Results after timing.");
+for(let i=1;i<=4;i++){speakers.push({name:"TT"+(maxTT+i),type:ttPreset.key,speechTitle:"",isPlaceholder:true});}
+save();renderSpeakers();invalidateReport();toast("Added TT1–TT4 placeholders. Edit final names from Results before sharing.");
 }
 function renderSpeakers(){
 let list=document.getElementById("speakerList");list.innerHTML="";
@@ -235,7 +240,7 @@ let s=speakers[currentIndex];if(!s){toast("Add/select speaker first");return;}le
 let status="Qualified";if(seconds<p.min)status="Under Time";else if(seconds>p.max)status="Over Time";
 records.push({name:s.name,speechTitle:s.speechTitle||"",type:p.label,time:fmt(seconds),status});
 speakers.splice(currentIndex,1);if(currentIndex>=speakers.length)currentIndex=Math.max(0,speakers.length-1);
-save();renderSpeakers();renderResults();generateReport();resetTimer();
+save();renderSpeakers();renderResults();invalidateReport();resetTimer();if(speakers.length===0&&records.length>0){openResults();}
 }
 function nextSpeaker(){if(currentIndex<speakers.length-1){currentIndex++;document.getElementById("speakerList").value=currentIndex;selectSpeaker();}else{resetTimer();}}
 
@@ -250,7 +255,29 @@ row.innerHTML=`<td><input class="inline-input" id="editName${index}" value="${es
 }
 function saveRecordEdit(index){
 let name=document.getElementById("editName"+index).value.trim();let speechTitle=document.getElementById("editTitle"+index).value.trim();if(!name){toast("Speaker name cannot be blank");return;}
-records[index].name=name;records[index].speechTitle=speechTitle;save();renderResults();generateReport();
+records[index].name=name;records[index].speechTitle=speechTitle;save();renderResults();invalidateReport();
+}
+
+function openResults(){
+let section=document.getElementById("resultsSection");
+if(section){section.open=true;section.scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function openReport(){
+let section=document.getElementById("reportSection");
+if(section){section.open=true;section.scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function findPlaceholderRecords(){
+return records.filter(r=>/^TT\d+$/i.test(String(r.name).trim())).map(r=>r.name);
+}
+function reviewAndGenerateReport(){
+if(records.length===0){toast("No timings saved yet. Time and save at least one speaker first.");return;}
+let placeholders=findPlaceholderRecords();
+if(placeholders.length>0){
+let proceed=confirm("These Table Topic placeholder names are still in the results:\n\n"+placeholders.join(", ")+"\n\nRename them in Saved Results before sharing, or tap OK to build the report anyway.");
+if(!proceed){openResults();return;}
+}
+generateReport();
+openReport();
 }
 
 function generateReport(){
@@ -267,12 +294,14 @@ let qualified=records.filter(r=>r.status==="Qualified").length;let under=records
 report+="*Summary*\n";report+="────────────────\n";report+=`✅ Qualified: ${qualified}\n`;report+=`⚠️ Under Time: ${under}\n`;report+=`❌ Over Time: ${over}\n`;
 document.getElementById("report").value=report;return report;
 }
-function copyReport(){let text=generateReport();navigator.clipboard.writeText(text).then(()=>toast("Report copied!")).catch(()=>toast("Copy failed. Please manually select and copy the report."));}
-function shareReport(){let text=encodeURIComponent(generateReport());window.open("https://wa.me/?text="+text,"_blank");}
-function clearAll(){if(confirm("Clear this meeting data? Custom presets and meeting details will remain saved.")){speakers=[];records=[];seconds=0;currentIndex=0;localStorage.removeItem("speakers");localStorage.removeItem("records");save();renderSpeakers();renderResults();updateTimer();generateReport();}}
-function clearEverything(){if(confirm("Clear everything including custom presets and meeting details?")){speakers=[];records=[];customPresets=[];meetingDetails={};seconds=0;currentIndex=0;localStorage.clear();loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();updateTimer();generateReport();}}
+function copyReport(){if(!document.getElementById("report").value.trim()){reviewAndGenerateReport();}
+let text=document.getElementById("report").value||generateReport();navigator.clipboard.writeText(text).then(()=>toast("Report copied!")).catch(()=>toast("Copy failed. Please manually select and copy the report."));}
+function shareReport(){if(!document.getElementById("report").value.trim()){reviewAndGenerateReport();}
+let text=encodeURIComponent(document.getElementById("report").value||generateReport());window.open("https://wa.me/?text="+text,"_blank");}
+function clearAll(){if(confirm("Clear this meeting data? Custom presets and meeting details will remain saved.")){speakers=[];records=[];seconds=0;currentIndex=0;localStorage.removeItem("speakers");localStorage.removeItem("records");save();renderSpeakers();renderResults();updateTimer();document.getElementById("report").value="";}}
+function clearEverything(){if(confirm("Clear everything including custom presets and meeting details?")){speakers=[];records=[];customPresets=[];meetingDetails={};seconds=0;currentIndex=0;localStorage.clear();loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();updateTimer();document.getElementById("report").value="";}}
 
-loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();generateReport();updateTimer();
+loadMeetingDetails();renderTypeDropdown();renderSpeakers();renderResults();updateTimer();
 </script>
 <script>
 if ("serviceWorker" in navigator) {

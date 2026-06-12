@@ -1,4 +1,4 @@
-const CACHE_NAME = "toastmasters-timer-v3";
+const CACHE_NAME = "toastmasters-timer-v5";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",

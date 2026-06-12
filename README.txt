@@ -8,18 +8,17 @@ Files included:
 - icon-512.png
 
 What is new in this version:
-- Minimal meeting-focused screen
-- Collapsible configuration sections
+- Cleaner meeting-first screen
+- No report button at the beginning
+- Quick actions only for adding TT placeholders and reviewing saved results
+- Final Timer Report is tucked away until the end of the meeting
+- Review & Build Timer Report flow with placeholder TT name warning
+- Collapsible setup/configuration sections
 - Meeting details in report
 - Custom timing presets
-- Speaker queue and TT placeholders
+- Speaker queue and TT1-TT4 placeholders
 - Editable saved speaker names and speech titles
 - WhatsApp-friendly report
 - Offline support as a PWA
 
-To host on GitHub Pages:
-1. Upload all files in this folder to a public GitHub repo.
-2. Ensure index.html is at the repo root.
-3. Go to Settings > Pages.
-4. Source: Deploy from branch. Branch: main. Folder: /root.
-5. Open the GitHub Pages URL on your phone and Add to Home Screen.
+
